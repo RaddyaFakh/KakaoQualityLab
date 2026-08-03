@@ -458,18 +458,18 @@ def render_home_page() -> None:
     langkah = [
         (
             "Pilih Sumber Citra",
-            "Buka menu **Deteksi Cerdas (AI)**, lalu pilih unggah berkas foto "
+            "Buka menu Deteksi Cerdas (AI), lalu pilih unggah berkas foto "
             "atau ambil langsung lewat kamera.",
         ),
         (
             "Jalankan Analisis",
-            "Klik tombol **Mulai Analisis Citra** — sistem menjalankan model "
+            "Klik tombol Mulai Analisis Citra — sistem menjalankan model "
             "DenseNet-121 untuk mengklasifikasikan mutu biji.",
         ),
         (
             "Tinjau & Simpan Hasil",
             "Tinjau hasil klasifikasi beserta tingkat kepercayaannya; setiap "
-            "analisis otomatis tercatat di menu **Riwayat Analisis** dan siap diunduh.",
+            "analisis otomatis tercatat di menu Riwayat Analisis dan siap diunduh.",
         ),
     ]
     for i, (judul, isi) in enumerate(langkah, start=1):
@@ -485,7 +485,6 @@ def render_home_page() -> None:
 
 
 # 6. HALAMAN: DETEKSI CERDAS (AI)
-
 
 def render_detection_page(model) -> None:
     """Menyusun halaman input citra dan menjalankan inferensi model."""
@@ -591,7 +590,6 @@ def render_detection_page(model) -> None:
 
 # 7. HALAMAN: RIWAYAT ANALISIS
 
-
 def _highlight_kelas(val: str) -> str:
     """Memberi warna latar sel tabel sesuai kelas mutu yang terdeteksi."""
     for kelas, info in CLASS_INFO.items():
@@ -659,9 +657,7 @@ def render_history_page() -> None:
             st.rerun()
 
 
-
 # 8. SIDEBAR & NAVIGASI
-
 
 def build_sidebar() -> str:
     """Membangun sidebar navigasi dan mengembalikan halaman yang dipilih."""
@@ -698,9 +694,7 @@ def build_sidebar() -> str:
     )
     return halaman
 
-
 # 9. ENTRY POINT
-
 
 def main() -> None:
     """Titik masuk aplikasi: konfigurasi, gaya, routing halaman."""
