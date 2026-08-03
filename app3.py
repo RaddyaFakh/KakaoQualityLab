@@ -10,8 +10,10 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image
 
-# 1. KONSTANTA & KONFIGURASI
 
+# ============================================================
+# 1. KONSTANTA & KONFIGURASI
+# ============================================================
 
 APP_TITLE = "Sistem Klasifikasi Mutu Biji Kakao"
 MODEL_PATH = "densenet121_kakao1.h5"
@@ -86,39 +88,29 @@ CUSTOM_CSS = """
     --gold-500: #C69749;
     --line: rgba(43, 24, 16, 0.10);
     --ink-muted: rgba(43, 24, 16, 0.62);
-
-    /* Token yang nilainya berbeda antara mode terang & gelap */
-    --app-bg: var(--pulp-050);
-    --text-primary: var(--roast-900);
-    --text-muted: var(--ink-muted);
-    --card-bg: #FFFFFF;
-    --card-metric: var(--cacao-700);
 }
 
-/* Override token di atas saat browser/OS memakai preferensi dark mode */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --app-bg: #1C130D;
-        --text-primary: #F3E9DA;
-        --text-muted: rgba(243, 233, 218, 0.62);
-        --line: rgba(255, 255, 255, 0.10);
-        --card-bg: #2A1D15;
-        --card-metric: #D9A85C;
-    }
-}
+/* Elemen di bawah ini sengaja memakai CSS variable bawaan Streamlit
+   (--text-color, --background-color, --secondary-background-color).
+   Nilainya otomatis mengikuti tema yang BENAR-BENAR aktif di Streamlit,
+   baik itu dari preferensi OS maupun dipilih manual lewat menu
+   "⋮ > Settings > Choose app theme" -- beda dengan prefers-color-scheme
+   yang cuma membaca preferensi OS dan bisa salah tebak kalau tema
+   dipilih manual. Nilai setelah koma adalah fallback bila variable
+   belum tersedia (versi Streamlit sangat lama). */
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background-color: var(--app-bg); }
+.stApp { background-color: var(--background-color, #FBF6EE); }
 
 h1, h2, h3 {
     font-family: 'Space Grotesk', sans-serif !important;
-    color: var(--text-primary) !important;
+    color: var(--text-color, #2B1810) !important;
     letter-spacing: -0.01em;
 }
 
 div[data-testid="stMetricValue"] {
     font-family: 'IBM Plex Mono', monospace;
-    color: var(--card-metric);
+    color: var(--text-color, #6B4226);
 }
 div[data-testid="stMetricLabel"] {
     font-family: 'Inter', sans-serif;
@@ -249,7 +241,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
 
 /* ---- Kartu informasi ---- */
 .info-card {
-    background: var(--card-bg);
+    background: var(--secondary-background-color, #FFFFFF);
     border: 1px solid var(--line);
     border-top: 3px solid var(--gold-500);
     border-radius: 10px;
@@ -257,8 +249,8 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
     height: 100%;
     box-shadow: 0 2px 8px rgba(43, 24, 16, 0.05);
 }
-.info-card .angka { font-family: 'IBM Plex Mono', monospace; font-size: 1.3rem; color: var(--card-metric); font-weight: 600; }
-.info-card .label { font-size: 0.82rem; color: var(--text-primary); opacity: 0.75; margin-top: 0.2rem; }
+.info-card .angka { font-family: 'IBM Plex Mono', monospace; font-size: 1.3rem; color: var(--text-color, #6B4226); font-weight: 600; }
+.info-card .label { font-size: 0.82rem; color: var(--text-color, #2B1810); opacity: 0.75; margin-top: 0.2rem; }
 
 /* ---- Penanda langkah ---- */
 .step-badge {
@@ -273,7 +265,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
 .app-footer {
     margin-top: 2.5rem; padding-top: 1.1rem;
     border-top: 1px solid var(--line);
-    font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;
+    font-size: 0.8rem; color: var(--text-color, #2B1810); opacity: 0.65; line-height: 1.6;
 }
 
 /* Sembunyikan footer bawaan Streamlit */
@@ -288,7 +280,11 @@ footer { visibility: hidden; }
 
 @st.cache_resource
 def load_model():
+    """Memuat model DenseNet-121 sekali lalu menyimpannya di cache.
 
+    Mengembalikan objek model Keras, atau None bila berkas tidak ditemukan
+    atau gagal dimuat.
+    """
     try:
         return tf.keras.models.load_model(MODEL_PATH)
     except Exception as error:  # noqa: BLE001 - tampilkan pesan ramah ke pengguna
@@ -297,7 +293,12 @@ def load_model():
 
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
-    
+    """Menyiapkan citra agar sesuai format input model.
+
+    Langkah: ubah ukuran ke 224x224, pastikan 3 kanal (RGB), lalu tambahkan
+    dimensi batch. Skala piksel dibiarkan pada rentang [0, 255] mengikuti
+    konfigurasi input model saat pelatihan.
+    """
     image = image.resize(IMAGE_SIZE)
     image_array = np.array(image.convert("RGB")).astype(np.float32)
     return np.expand_dims(image_array, axis=0)
@@ -323,7 +324,11 @@ def find_asset(base_name: str) -> str | None:
 
 
 def render_class_visual(base_name: str, color: str, short_label: str) -> None:
-    
+    """Menampilkan foto contoh kelas bila tersedia.
+
+    Jika berkas belum diunggah, tampilkan placeholder berwarna sesuai tema
+    kelas sehingga tata letak tetap konsisten.
+    """
     path = find_asset(base_name)
     if path:
         st.image(path, use_container_width=True)
@@ -343,6 +348,7 @@ def render_class_visual(base_name: str, color: str, short_label: str) -> None:
 
 
 def render_footer() -> None:
+    """Menampilkan footer atribusi bergaya laporan penelitian."""
     st.markdown(
         f"""
         <div class="app-footer">
@@ -444,18 +450,18 @@ def render_home_page() -> None:
     langkah = [
         (
             "Pilih Sumber Citra",
-            "Buka menu Deteksi Cerdas (AI), lalu pilih unggah berkas foto "
+            "Buka menu **Deteksi Cerdas (AI)**, lalu pilih unggah berkas foto "
             "atau ambil langsung lewat kamera.",
         ),
         (
             "Jalankan Analisis",
-            "Klik tombol Mulai Analisis Citra — sistem menjalankan model "
+            "Klik tombol **Mulai Analisis Citra** — sistem menjalankan model "
             "DenseNet-121 untuk mengklasifikasikan mutu biji.",
         ),
         (
             "Tinjau & Simpan Hasil",
             "Tinjau hasil klasifikasi beserta tingkat kepercayaannya; setiap "
-            "analisis otomatis tercatat di menu Riwayat Analisis dan siap diunduh.",
+            "analisis otomatis tercatat di menu **Riwayat Analisis** dan siap diunduh.",
         ),
     ]
     for i, (judul, isi) in enumerate(langkah, start=1):
@@ -472,6 +478,7 @@ def render_home_page() -> None:
 
 # 6. HALAMAN: DETEKSI CERDAS (AI)
 
+
 def render_detection_page(model) -> None:
     """Menyusun halaman input citra dan menjalankan inferensi model."""
     st.title("Pusat Pengujian & Deteksi Citra")
@@ -482,13 +489,13 @@ def render_detection_page(model) -> None:
 
     metode_input = st.radio(
         "Metode input citra:",
-        ["Unggah File Foto", "Ambil Foto via Kamera"],
+        ["Unggah File Foto (Data Sekunder)", "Ambil Foto via Kamera (Data Primer)"],
     )
 
     image_to_analyze: Image.Image | None = None
     sumber_label = ""
 
-    if metode_input == "Unggah File Foto":
+    if metode_input == "Unggah File Foto (Data Sekunder)":
         uploaded_file = st.file_uploader(
             "Pilih file citra (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
         )
@@ -499,7 +506,7 @@ def render_detection_page(model) -> None:
         camera_file = st.camera_input("Posisikan biji kakao di tengah kamera")
         if camera_file:
             image_to_analyze = Image.open(camera_file)
-            sumber_label = "Data Primer"
+            sumber_label = "Kamera Primer"
 
     if image_to_analyze is None:
         return
@@ -576,6 +583,7 @@ def render_detection_page(model) -> None:
 
 # 7. HALAMAN: RIWAYAT ANALISIS
 
+
 def _highlight_kelas(val: str) -> str:
     """Memberi warna latar sel tabel sesuai kelas mutu yang terdeteksi."""
     for kelas, info in CLASS_INFO.items():
@@ -626,7 +634,8 @@ def render_history_page() -> None:
     dl_col, clear_col = st.columns([3, 1])
     with dl_col:
         st.caption(
-            "Unduh data untuk menyimpan hasil klasifikasi mutu biji kakao"
+            "Unduh data ini sebagai lampiran log uji coba primer maupun sekunder "
+            "untuk dokumentasi laporan penelitian Anda."
         )
         csv_data = df_display.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -642,9 +651,12 @@ def render_history_page() -> None:
             st.rerun()
 
 
+
 # 8. SIDEBAR & NAVIGASI
 
+
 def build_sidebar() -> str:
+    """Membangun sidebar navigasi dan mengembalikan halaman yang dipilih."""
     st.sidebar.markdown(
         """
         <div class="brand-row">
@@ -669,8 +681,8 @@ def build_sidebar() -> str:
         f"""
         <div style="background: rgba(198,151,73,0.14); border-left:3px solid var(--gold-500);
         padding:0.8rem 1rem; border-radius:6px; font-size:0.85rem; line-height:1.55;">
-        <b>Tips Pengambilan Gambar</b><br>Gunakan pencahayaan konstan saat mengambil data
-        menggunakan kamera agar hasilnya sesuai dengan target
+        <b>Tips Penelitian</b><br>Gunakan pencahayaan konstan saat mengambil data
+        primer lewat kamera agar akurasi klasifikasi tetap terjaga di atas
         {CONFIDENCE_TARGET}%.
         </div>
         """,
@@ -678,7 +690,9 @@ def build_sidebar() -> str:
     )
     return halaman
 
+
 # 9. ENTRY POINT
+
 
 def main() -> None:
     """Titik masuk aplikasi: konfigurasi, gaya, routing halaman."""
