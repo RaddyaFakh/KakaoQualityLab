@@ -10,10 +10,8 @@ import streamlit as st
 import tensorflow as tf
 from PIL import Image
 
-
-# ============================================================
 # 1. KONSTANTA & KONFIGURASI
-# ============================================================
+
 
 APP_TITLE = "Sistem Klasifikasi Mutu Biji Kakao"
 MODEL_PATH = "densenet121_kakao1.h5"
@@ -26,7 +24,7 @@ COLOR_ROAST = "#2B1810"
 COLOR_CACAO = "#6B4226"
 COLOR_GOLD = "#C69749"
 
-
+# Urutan kelas HARUS identik dengan urutan output layer saat model dilatih.
 CLASS_NAMES = [
     "Broken Beans Cocoa (Cacat Fisik/Pecah)",
     "Fermented Cocoa (Mutu Baik/Cokelat Merata)",
@@ -88,20 +86,39 @@ CUSTOM_CSS = """
     --gold-500: #C69749;
     --line: rgba(43, 24, 16, 0.10);
     --ink-muted: rgba(43, 24, 16, 0.62);
+
+    /* Token yang nilainya berbeda antara mode terang & gelap */
+    --app-bg: var(--pulp-050);
+    --text-primary: var(--roast-900);
+    --text-muted: var(--ink-muted);
+    --card-bg: #FFFFFF;
+    --card-metric: var(--cacao-700);
+}
+
+/* Override token di atas saat browser/OS memakai preferensi dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --app-bg: #1C130D;
+        --text-primary: #F3E9DA;
+        --text-muted: rgba(243, 233, 218, 0.62);
+        --line: rgba(255, 255, 255, 0.10);
+        --card-bg: #2A1D15;
+        --card-metric: #D9A85C;
+    }
 }
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-.stApp { background-color: var(--pulp-050); }
+.stApp { background-color: var(--app-bg); }
 
 h1, h2, h3 {
     font-family: 'Space Grotesk', sans-serif !important;
-    color: var(--roast-900) !important;
+    color: var(--text-primary) !important;
     letter-spacing: -0.01em;
 }
 
 div[data-testid="stMetricValue"] {
     font-family: 'IBM Plex Mono', monospace;
-    color: var(--cacao-700);
+    color: var(--card-metric);
 }
 div[data-testid="stMetricLabel"] {
     font-family: 'Inter', sans-serif;
@@ -232,7 +249,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
 
 /* ---- Kartu informasi ---- */
 .info-card {
-    background: white;
+    background: var(--card-bg);
     border: 1px solid var(--line);
     border-top: 3px solid var(--gold-500);
     border-radius: 10px;
@@ -240,8 +257,8 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
     height: 100%;
     box-shadow: 0 2px 8px rgba(43, 24, 16, 0.05);
 }
-.info-card .angka { font-family: 'IBM Plex Mono', monospace; font-size: 1.3rem; color: var(--cacao-700); font-weight: 600; }
-.info-card .label { font-size: 0.82rem; color: var(--roast-900); opacity: 0.75; margin-top: 0.2rem; }
+.info-card .angka { font-family: 'IBM Plex Mono', monospace; font-size: 1.3rem; color: var(--card-metric); font-weight: 600; }
+.info-card .label { font-size: 0.82rem; color: var(--text-primary); opacity: 0.75; margin-top: 0.2rem; }
 
 /* ---- Penanda langkah ---- */
 .step-badge {
@@ -256,7 +273,7 @@ section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child 
 .app-footer {
     margin-top: 2.5rem; padding-top: 1.1rem;
     border-top: 1px solid var(--line);
-    font-size: 0.8rem; color: var(--ink-muted); line-height: 1.6;
+    font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;
 }
 
 /* Sembunyikan footer bawaan Streamlit */
@@ -278,13 +295,18 @@ def load_model():
     """
     try:
         return tf.keras.models.load_model(MODEL_PATH)
-    except Exception as error:  
+    except Exception as error:  # noqa: BLE001 - tampilkan pesan ramah ke pengguna
         st.error(f"Gagal memuat model: {error}")
         return None
 
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
+    """Menyiapkan citra agar sesuai format input model.
 
+    Langkah: ubah ukuran ke 224x224, pastikan 3 kanal (RGB), lalu tambahkan
+    dimensi batch. Skala piksel dibiarkan pada rentang [0, 255] mengikuti
+    konfigurasi input model saat pelatihan.
+    """
     image = image.resize(IMAGE_SIZE)
     image_array = np.array(image.convert("RGB")).astype(np.float32)
     return np.expand_dims(image_array, axis=0)
@@ -310,7 +332,11 @@ def find_asset(base_name: str) -> str | None:
 
 
 def render_class_visual(base_name: str, color: str, short_label: str) -> None:
-   
+    """Menampilkan foto contoh kelas bila tersedia.
+
+    Jika berkas belum diunggah, tampilkan placeholder berwarna sesuai tema
+    kelas sehingga tata letak tetap konsisten.
+    """
     path = find_asset(base_name)
     if path:
         st.image(path, use_container_width=True)
@@ -330,6 +356,7 @@ def render_class_visual(base_name: str, color: str, short_label: str) -> None:
 
 
 def render_footer() -> None:
+    """Menampilkan footer atribusi bergaya laporan penelitian."""
     st.markdown(
         f"""
         <div class="app-footer">
