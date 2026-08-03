@@ -488,7 +488,7 @@ def render_detection_page(model) -> None:
     image_to_analyze: Image.Image | None = None
     sumber_label = ""
 
-    if metode_input == "Unggah File Foto (Data Sekunder)":
+    if metode_input == "Unggah File Foto":
         uploaded_file = st.file_uploader(
             "Pilih file citra (JPG, JPEG, PNG)", type=["jpg", "jpeg", "png"]
         )
@@ -499,7 +499,7 @@ def render_detection_page(model) -> None:
         camera_file = st.camera_input("Posisikan biji kakao di tengah kamera")
         if camera_file:
             image_to_analyze = Image.open(camera_file)
-            sumber_label = "Kamera Primer"
+            sumber_label = "Data Primer"
 
     if image_to_analyze is None:
         return
