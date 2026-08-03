@@ -26,7 +26,7 @@ COLOR_ROAST = "#2B1810"
 COLOR_CACAO = "#6B4226"
 COLOR_GOLD = "#C69749"
 
-# Urutan kelas HARUS identik dengan urutan output layer saat model dilatih.
+
 CLASS_NAMES = [
     "Broken Beans Cocoa (Cacat Fisik/Pecah)",
     "Fermented Cocoa (Mutu Baik/Cokelat Merata)",
@@ -278,18 +278,13 @@ def load_model():
     """
     try:
         return tf.keras.models.load_model(MODEL_PATH)
-    except Exception as error:  # noqa: BLE001 - tampilkan pesan ramah ke pengguna
+    except Exception as error:  
         st.error(f"Gagal memuat model: {error}")
         return None
 
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
-    """Menyiapkan citra agar sesuai format input model.
 
-    Langkah: ubah ukuran ke 224x224, pastikan 3 kanal (RGB), lalu tambahkan
-    dimensi batch. Skala piksel dibiarkan pada rentang [0, 255] mengikuti
-    konfigurasi input model saat pelatihan.
-    """
     image = image.resize(IMAGE_SIZE)
     image_array = np.array(image.convert("RGB")).astype(np.float32)
     return np.expand_dims(image_array, axis=0)
@@ -315,11 +310,7 @@ def find_asset(base_name: str) -> str | None:
 
 
 def render_class_visual(base_name: str, color: str, short_label: str) -> None:
-    """Menampilkan foto contoh kelas bila tersedia.
-
-    Jika berkas belum diunggah, tampilkan placeholder berwarna sesuai tema
-    kelas sehingga tata letak tetap konsisten.
-    """
+   
     path = find_asset(base_name)
     if path:
         st.image(path, use_container_width=True)
@@ -339,7 +330,6 @@ def render_class_visual(base_name: str, color: str, short_label: str) -> None:
 
 
 def render_footer() -> None:
-    """Menampilkan footer atribusi bergaya laporan penelitian."""
     st.markdown(
         f"""
         <div class="app-footer">
