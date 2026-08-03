@@ -68,10 +68,5 @@ Aplikasi akan secara otomatis terbuka di *browser* pada alamat `http://localhost
 └── README.md                 # Dokumentasi proyek
 ```
 
-## 👨‍💻 Penulis
-
-Dikembangkan oleh **Muhammad Raddya Fakhreza**  
-Universitas Gunadarma  
-
 ---
 *Disclaimer: Hasil klasifikasi dari sistem ini ditujukan sebagai alat bantu augmentasi pengujian pasca-panen, bukan sebagai pengganti mutlak verifikasi kualitas secara manual.*
