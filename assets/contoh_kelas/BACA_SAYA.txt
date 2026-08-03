@@ -1,0 +1,11 @@
+Letakkan foto contoh biji kakao di folder ini dengan salah satu nama berikut
+(boleh .jpg, .jpeg, atau .png):
+
+- fermented.jpg     -> contoh biji fermentasi sempurna (mutu baik)
+- unfermented.jpg   -> contoh biji mentah / slaty
+- moldy.jpg         -> contoh biji berjamur
+- broken.jpg        -> contoh biji pecah / cacat fisik
+
+Selama file belum ada, halaman Beranda akan menampilkan ilustrasi warna
+sebagai pengganti sementara. Setelah foto ditambahkan dengan nama yang
+tepat, foto tersebut akan otomatis tampil menggantikan ilustrasi.
