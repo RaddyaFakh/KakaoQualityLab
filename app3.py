@@ -288,11 +288,7 @@ footer { visibility: hidden; }
 
 @st.cache_resource
 def load_model():
-    """Memuat model DenseNet-121 sekali lalu menyimpannya di cache.
 
-    Mengembalikan objek model Keras, atau None bila berkas tidak ditemukan
-    atau gagal dimuat.
-    """
     try:
         return tf.keras.models.load_model(MODEL_PATH)
     except Exception as error:  # noqa: BLE001 - tampilkan pesan ramah ke pengguna
@@ -301,12 +297,7 @@ def load_model():
 
 
 def preprocess_image(image: Image.Image) -> np.ndarray:
-    """Menyiapkan citra agar sesuai format input model.
-
-    Langkah: ubah ukuran ke 224x224, pastikan 3 kanal (RGB), lalu tambahkan
-    dimensi batch. Skala piksel dibiarkan pada rentang [0, 255] mengikuti
-    konfigurasi input model saat pelatihan.
-    """
+    
     image = image.resize(IMAGE_SIZE)
     image_array = np.array(image.convert("RGB")).astype(np.float32)
     return np.expand_dims(image_array, axis=0)
@@ -332,11 +323,7 @@ def find_asset(base_name: str) -> str | None:
 
 
 def render_class_visual(base_name: str, color: str, short_label: str) -> None:
-    """Menampilkan foto contoh kelas bila tersedia.
-
-    Jika berkas belum diunggah, tampilkan placeholder berwarna sesuai tema
-    kelas sehingga tata letak tetap konsisten.
-    """
+    
     path = find_asset(base_name)
     if path:
         st.image(path, use_container_width=True)
@@ -356,7 +343,6 @@ def render_class_visual(base_name: str, color: str, short_label: str) -> None:
 
 
 def render_footer() -> None:
-    """Menampilkan footer atribusi bergaya laporan penelitian."""
     st.markdown(
         f"""
         <div class="app-footer">
@@ -496,7 +482,7 @@ def render_detection_page(model) -> None:
 
     metode_input = st.radio(
         "Metode input citra:",
-        ["Unggah File Foto (Data Sekunder)", "Ambil Foto via Kamera (Data Primer)"],
+        ["Unggah File Foto", "Ambil Foto via Kamera"],
     )
 
     image_to_analyze: Image.Image | None = None
@@ -640,8 +626,7 @@ def render_history_page() -> None:
     dl_col, clear_col = st.columns([3, 1])
     with dl_col:
         st.caption(
-            "Unduh data ini sebagai lampiran log uji coba primer maupun sekunder "
-            "untuk dokumentasi laporan penelitian Anda."
+            "Unduh data untuk menyimpan hasil klasifikasi mutu biji kakao"
         )
         csv_data = df_display.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -660,7 +645,6 @@ def render_history_page() -> None:
 # 8. SIDEBAR & NAVIGASI
 
 def build_sidebar() -> str:
-    """Membangun sidebar navigasi dan mengembalikan halaman yang dipilih."""
     st.sidebar.markdown(
         """
         <div class="brand-row">
@@ -685,8 +669,8 @@ def build_sidebar() -> str:
         f"""
         <div style="background: rgba(198,151,73,0.14); border-left:3px solid var(--gold-500);
         padding:0.8rem 1rem; border-radius:6px; font-size:0.85rem; line-height:1.55;">
-        <b>Tips Penelitian</b><br>Gunakan pencahayaan konstan saat mengambil data
-        primer lewat kamera agar akurasi klasifikasi tetap terjaga di atas
+        <b>Tips Pengambilan Gambar</b><br>Gunakan pencahayaan konstan saat mengambil data
+        menggunakan kamera agar hasilnya sesuai dengan target
         {CONFIDENCE_TARGET}%.
         </div>
         """,
